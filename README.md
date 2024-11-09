@@ -80,10 +80,10 @@ Needed Libraries
     *   Comes with Python's standard library; no installation required.
         
 
-Screenshots
+Screenshot
 -----------
 
-coming soon
+<img src="https://raw.githubusercontent.com/yodabytz/diffanywhere/refs/heads/main/diffanywhere.png?raw=true" width="600">
 
 Contributing
 ------------
