@@ -41,7 +41,7 @@ Installation
 Usage
 -----
 
-1.  Run the diff\_anywhere.py script using Python 3.
+1.  Run the diffany.py script using Python 3.
     
 2.  **Paste Code/Text**
     
