@@ -83,7 +83,7 @@ Needed Libraries
 Screenshots
 -----------
 
-_(Include screenshots here if desired)_
+coming soon
 
 Contributing
 ------------
