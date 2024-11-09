@@ -31,7 +31,7 @@ Requirements
 Installation
 ------------
 
-1.  bashCopy codegit clone https://github.com/yodabytz/diff-anywhere.git
+1.  bashCopy codegit clone https://github.com/yodabytz/diffanywhere.git
     
 2.  bashCopy codecd diff-anywhere
     
