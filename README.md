@@ -1,4 +1,4 @@
-Diff Anywhere
+Diff Anywhere 1.0
 =============
 
 Description
