@@ -69,7 +69,6 @@ class DiffAnywhereApp:
         self.ignore_blank_lines = tk.BooleanVar(value=False)
         self.suppress_common_lines = tk.BooleanVar(value=False)
         self.context_lines = tk.IntVar(value=3)
-        self.side_by_side = tk.BooleanVar(value=False)
 
         # Create the menu bar
         self.create_menu()
@@ -128,7 +127,7 @@ class DiffAnywhereApp:
         label_diff.pack(side=tk.TOP, anchor="w", fill=tk.X)
         diff_frame = ttk.Frame(frame_diff, style='TFrame')
         diff_frame.pack(fill=tk.BOTH, expand=True)
-        self.diff_linenumbers = TextLineNumbers(diff_frame, width=30, bg=BACKGROUND_COLOR, fg=FONT_COLOR, bd=0, highlightthickness=0)
+        self.diff_linenumbers = TextLineNumbers(diff_frame, width=4, bg=BACKGROUND_COLOR, fg=FONT_COLOR, bd=0, highlightthickness=0)
         self.diff_linenumbers.pack(side="left", fill="y")
         self.diff_text = tk.Text(diff_frame, wrap=tk.NONE, bg=BACKGROUND_COLOR, fg=FONT_COLOR, insertbackground=FONT_COLOR, bd=0, highlightthickness=0)
         self.diff_text.pack(side="left", fill="both", expand=True)
@@ -142,9 +141,9 @@ class DiffAnywhereApp:
         self.diff_text.tag_configure("insert", foreground="#98FB98")  # PaleGreen
         self.diff_text.tag_configure("delete", foreground="#FF6B6B")  # Bright red
         self.diff_text.tag_configure("replace", foreground="#FFD700")  # Gold
-        self.diff_text.tag_configure("highlight", background="#FFD700", foreground="#000000")  # Black font
-        self.diff_text.tag_configure("line_number", foreground=FONT_COLOR, font=('TkDefaultFont', 10, 'bold'))
         self.diff_text.tag_configure("equal", foreground=FONT_COLOR)
+        self.diff_text.tag_configure("line_number", foreground=FONT_COLOR, font=('TkDefaultFont', 10, 'bold'))
+        self.diff_text.tag_configure("highlight", background="#FFD700", foreground="#000000")  # Black font
 
     def create_menu(self):
         # Use standard Menu without custom colors
@@ -166,13 +165,6 @@ class DiffAnywhereApp:
         options_menu.add_checkbutton(label="Ignore All Whitespace", variable=self.ignore_whitespace, command=self.on_option_changed)
         options_menu.add_checkbutton(label="Ignore Blank Lines", variable=self.ignore_blank_lines, command=self.on_option_changed)
         options_menu.add_checkbutton(label="Suppress Common Lines", variable=self.suppress_common_lines, command=self.on_option_changed)
-        options_menu.add_checkbutton(label="Side-by-Side View", variable=self.side_by_side, command=self.on_option_changed)
-
-        # Context Lines Submenu
-        context_menu = tk.Menu(options_menu, tearoff=0)
-        options_menu.add_cascade(label="Context Lines", menu=context_menu)
-        for num in [0, 1, 2, 3, 4, 5]:
-            context_menu.add_radiobutton(label=str(num), variable=self.context_lines, value=num, command=self.on_option_changed)
 
         # Help Menu
         help_menu = tk.Menu(menubar, tearoff=0)
@@ -211,59 +203,45 @@ class DiffAnywhereApp:
         text1_processed = self.process_text(text1_content)
         text2_processed = self.process_text(text2_content)
 
-        # Use difflib with options
-        sm = difflib.SequenceMatcher(None, text1_processed, text2_processed)
-        opcodes = sm.get_opcodes()
-
         self.diff_text.delete("1.0", tk.END)
 
-        if self.side_by_side.get():
-            # Side-by-side view
-            for tag, i1, i2, j1, j2 in opcodes:
-                for idx in range(max(i2 - i1, j2 - j1)):
-                    left_line = text1_processed[i1 + idx] if i1 + idx < i2 else ''
-                    right_line = text2_processed[j1 + idx] if j1 + idx < j2 else ''
-                    if tag == 'equal':
-                        if not self.suppress_common_lines.get():
-                            self.diff_text.insert(tk.END, f"{left_line:<50}    {right_line}\n", 'equal')
-                    elif tag == 'replace':
-                        self.diff_text.insert(tk.END, f"{left_line:<50}    {right_line}\n", 'replace')
-                    elif tag == 'delete':
-                        self.diff_text.insert(tk.END, f"{left_line:<50}    \n", 'delete')
-                    elif tag == 'insert':
-                        self.diff_text.insert(tk.END, f"{'':<50}    {right_line}\n", 'insert')
-        else:
-            # Normal diff view
-            context = self.context_lines.get()
-            differ = difflib.Differ(charjunk=None if not self.ignore_whitespace.get() else difflib.IS_CHARACTER_JUNK)
-            diff = list(differ.compare(text1_processed, text2_processed))
-            if self.suppress_common_lines.get():
-                diff = [line for line in diff if not line.startswith('  ')]
-            if context > 0:
-                diff = self.add_context(diff, context)
-            self.diff_text.insert(tk.END, '\n'.join(diff))
+        max_lines = max(len(text1_processed), len(text2_processed))
+        for i in range(max_lines):
+            line1 = text1_processed[i] if i < len(text1_processed) else ''
+            line2 = text2_processed[i] if i < len(text2_processed) else ''
+            line_num = i + 1
+
+            if line1 == line2:
+                if not self.suppress_common_lines.get():
+                    continue  # Skip equal lines
+            else:
+                # Insert line number
+                self.diff_text.insert(tk.END, f"Line {line_num}:\n", 'line_number')
+
+                # Insert text from text1 with highlights
+                self.diff_text.insert(tk.END, "- ", 'delete')
+                self.insert_with_highlight(line1, line2, 'delete')
+                self.diff_text.insert(tk.END, "\n")
+
+                # Insert text from text2 with highlights
+                self.diff_text.insert(tk.END, "+ ", 'insert')
+                self.insert_with_highlight(line2, line1, 'insert')
+                self.diff_text.insert(tk.END, "\n")
 
         # Update line numbers
         self.diff_linenumbers.redraw()
         self.text1_linenumbers.redraw()
         self.text2_linenumbers.redraw()
 
-    def add_context(self, diff_lines, context):
-        result = []
-        buffer = []
-        context_counter = 0
-        for line in diff_lines:
-            if line.startswith(('  ', '? ')):
-                if context_counter < context:
-                    buffer.append(line)
-                    context_counter += 1
+    def insert_with_highlight(self, line_main, line_compare, tag):
+        # Use SequenceMatcher to find matching blocks
+        sm = difflib.SequenceMatcher(None, line_main, line_compare)
+        for opcode, a0, a1, b0, b1 in sm.get_opcodes():
+            text = line_main[a0:a1]
+            if opcode == 'equal':
+                self.diff_text.insert(tk.END, text, tag)
             else:
-                if buffer:
-                    result.extend(buffer)
-                    buffer = []
-                    context_counter = 0
-                result.append(line)
-        return result
+                self.diff_text.insert(tk.END, text, 'highlight')
 
     def process_text(self, text_lines):
         processed = []
