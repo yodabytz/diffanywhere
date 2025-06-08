@@ -31,11 +31,11 @@ Requirements
 Installation
 ------------
 
-1.  bashCopy codegit clone https://github.com/yodabytz/diffanywhere.git
+1.  git clone https://github.com/yodabytz/diffanywhere.git
     
-2.  bashCopy codecd diff-anywhere
+2.  cd diff-anywhere
     
-3.  bashCopy codepython diff\_anywhere.py
+3.  python diff\_anywhere.py
     
 
 Usage
@@ -73,7 +73,7 @@ Needed Libraries
     
     *   Usually included with Python.
         
-    *   bashCopy code# For Debian/Ubuntusudo apt-get install python3-tk# For macOS using Homebrewbrew install python-tk# For Windows# Tkinter comes with the standard Python installer from python.org
+    *   bash Copy code# For Debian/Ubuntusudo apt-get install python3-tk# For macOS using Homebrewbrew install python-tk# For Windows# Tkinter comes with the standard Python installer from python.org
         
 *   **Difflib**
     
@@ -92,11 +92,11 @@ Contributions are welcome! Please follow these steps:
 
 1.  Click the **Fork** button at the top-right corner of the repository page.
     
-2.  bashCopy codegit checkout -b feature/YourFeatureName
+2.  git checkout -b feature/YourFeatureName
     
-3.  bashCopy codegit commit -am 'Add a feature'
+3.  git commit -am 'Add a feature'
     
-4.  bashCopy codegit push origin feature/YourFeatureName
+4.  git push origin feature/YourFeatureName
     
 5.  Submit your pull request for review.
     
